@@ -8,7 +8,7 @@ registry = ConnectRegistry(None, HKEY_LOCAL_MACHINE)
 RawKey = OpenKey(registry, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall")
 scriptPath = str(os.path.dirname(__file__))
 
-def directoryOverhead():
+def directoryOverhead() -> None:
     if not os.path.exists("inventory_reports"):
         os.makedirs("inventory_reports")
 
@@ -24,7 +24,7 @@ def checkLastCSV(directory) -> str:
 
 def lastCSVArray(file) -> list:
     col_data = []
-    with open(file, 'r') as f:
+    with open(file, 'r', encoding='utf-8') as f:
         reader = csv.reader(f)
     
         #skip header row
@@ -34,7 +34,18 @@ def lastCSVArray(file) -> list:
                 col_data.append(row[1])
     return col_data
 
-def inventory():
+def compareInventories(array1, array2) -> str:
+    inventoriesDifference = set(array1) != set(array2)
+
+    if inventoriesDifference:
+        new = set(array1) - set(array2)
+        removed = set(array2) - set(array1)
+        return(f'\nNew Items: {new}\nRemoved Items: {removed}')
+    else:
+        return('No changes made to system inventory since last report.')
+
+programs = []
+def inventory(array) -> str | list:
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file_path = os.path.join("inventory_reports", f'{timestamp}')
 
@@ -52,17 +63,19 @@ def inventory():
                     display_name, reg_type = QueryValueEx(subkey, "DisplayName")
                     print(f"{i} : {display_name} : {subkey_name}")
                     writer.writerow([i, display_name, subkey_name])
+                    array.append(display_name)
                     CloseKey(subkey)
                 except FileNotFoundError: #for when subkey does not have DisplayName attribute
                     pass
                 i = i + 1
         except WindowsError as e:
-            print(f"Error: {e}" )
+            return(f"Error: {e}" )
     CloseKey(RawKey)
+    return array
 
 directoryOverhead()
 lastCSV = checkLastCSV(scriptPath)
-print(lastCSV)
+inventory(programs)
 if lastCSV:
-    print(lastCSVArray(lastCSV))
-inventory()
+    lastestInventoryReport = lastCSVArray(lastCSV)
+    print(compareInventories(programs, lastestInventoryReport))
