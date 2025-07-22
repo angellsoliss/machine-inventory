@@ -12,7 +12,7 @@ def directoryOverhead() -> None:
     if not os.path.exists("inventory_reports"):
         os.makedirs("inventory_reports")
 
-def checkLastCSV(directory) -> str:
+def checkLastCSV(directory) -> str | bool:
     path = directory + "\inventory_reports\*.csv"
     files = glob.glob(path)
     if files:
