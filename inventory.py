@@ -13,12 +13,11 @@ def directoryOverhead() -> None:
         os.makedirs("inventory_reports")
 
 def checkLastCSV(directory) -> str:
-    path = directory + "\inventory_reports"
-    files = list(filter(os.path.isfile, glob.glob(os.path.join(path, "*"))))
-    files.sort(key=os.path.getatime, reverse=True)
+    path = directory + "\inventory_reports\*.csv"
+    files = glob.glob(path)
     if files:
-        latestCSV = files[0]
-        return(f'{latestCSV}')
+        latest_file = max(files, key=os.path.getctime)
+        return(f'{latest_file}')
     else:
         return False   
 
@@ -47,7 +46,7 @@ def compareInventories(array1, array2) -> str:
 programs = []
 def inventory(array) -> str | list:
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_path = os.path.join("inventory_reports", f'{timestamp}')
+    file_path = os.path.join("inventory_reports", f'{timestamp}.csv')
 
     with open(file_path, 'w', newline='', encoding='utf-8') as f:
         writer = csv.writer(f)
@@ -78,4 +77,6 @@ lastCSV = checkLastCSV(scriptPath)
 inventory(programs)
 if lastCSV:
     lastestInventoryReport = lastCSVArray(lastCSV)
+    lastCSVDate = lastCSV[-23:-3]
+    print(f'\nLast Inventory Report Taken on {lastCSVDate}')
     print(compareInventories(programs, lastestInventoryReport))
