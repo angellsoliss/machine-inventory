@@ -52,7 +52,7 @@ def inventory(array) -> str | list:
         writer = csv.writer(f)
         writer.writerow(['#', 'Display Name', 'Subkey Name'])
         i = 1
-        print("Enum. : Display Name : Subkey Name")
+        print("Enum. | Display Name | Subkey Name")
         try:
             while True:
                 subkey_name = EnumKey(RawKey, i)
@@ -60,7 +60,7 @@ def inventory(array) -> str | list:
                 try:
                     subkey = OpenKey(registry, subkey_path)
                     display_name, reg_type = QueryValueEx(subkey, "DisplayName")
-                    print(f"{i} : {display_name} : {subkey_name}")
+                    print(f"{i} | {display_name} | {subkey_name}")
                     writer.writerow([i, display_name, subkey_name])
                     array.append(display_name)
                     CloseKey(subkey)
